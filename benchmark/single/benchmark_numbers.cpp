@@ -45,6 +45,7 @@ using bsort::spinsort;
 using bsort::flat_stable_sort;
 using bsort::spreadsort::spreadsort;
 using bsort::pdqsort;
+using bsort::ska_sort;
 
 void Generator_random (void);
 void Generator_sorted (void);
@@ -72,12 +73,13 @@ int main (int argc, char *argv[])
     cout << std::endl;
 
     cout<<"[ 1 ] std::sort   [ 2 ] pdqsort          [ 3 ] std::stable_sort \n";
-    cout<<"[ 4 ] spinsort    [ 5 ] flat_stable_sort [ 6 ] spreadsort\n\n";
-    cout<<"                    |      |      |      |      |      |      |\n";
-    cout<<"                    | [ 1 ]| [ 2 ]| [ 3 ]| [ 4 ]| [ 5 ]| [ 6 ]|\n";
-    cout<<"--------------------+------+------+------+------+------+------+\n";
+    cout<<"[ 4 ] spinsort    [ 5 ] flat_stable_sort [ 6 ] spreadsort\n";
+    cout<<"[ 7 ] ska_sort\n\n";
+    cout<<"                    |      |      |      |      |      |      |      |\n";
+    cout<<"                    | [ 1 ]| [ 2 ]| [ 3 ]| [ 4 ]| [ 5 ]| [ 6 ]| [ 7 ]|\n";
+    cout<<"--------------------+------+------+------+------+------+------+------+\n";
     std::string empty_line =
-           "                    |      |      |      |      |      |      |\n";
+          "                    |      |      |      |      |      |      |      |\n";
     cout<<"random              |";
     Generator_random ();
     cout<<empty_line;
@@ -125,7 +127,7 @@ int main (int argc, char *argv[])
 
     cout<<"rv sorted +  10% mid|";
     Generator_reverse_sorted_middle (NELEM / 10);
-    cout<<"--------------------+------+------+------+------+------+------+\n";
+    cout<<"--------------------+------+------+------+------+------+------+------+\n";
     cout<<endl<<endl ;
     return 0;
 }
@@ -146,13 +148,7 @@ Generator_random (void)
 void
 Generator_sorted (void)
 {
-    vector<uint64_t> A;
-
-    A.reserve (NELEM);
-    A.clear ();
-    for (size_t i = 0; i < NELEM; ++i)
-        A.push_back (i);
-    Test<uint64_t, std::less<uint64_t>> (A);
+    Generator_sorted_end(0);
 
 }
 
@@ -206,13 +202,7 @@ void Generator_sorted_middle (size_t n_last)
 ;
 void Generator_reverse_sorted (void)
 {
-    vector<uint64_t> A;
-
-    A.reserve (NELEM);
-    A.clear ();
-    for (size_t i = NELEM; i > 0; --i)
-        A.push_back (i);
-    Test<uint64_t, std::less<uint64_t>> (A);
+    Generator_reverse_sorted_end(0);
 }
 void Generator_reverse_sorted_end (size_t n_last)
 {
@@ -311,6 +301,14 @@ int Test (std::vector<IA> &B,  compare comp)
     A = B;
     start = now ();
     spreadsort (A.begin (), A.end ());
+    finish = now ();
+    duration = subtract_time (finish, start);
+    V.push_back (duration);
+
+
+    A = B;
+    start = now ();
+    ska_sort (A.begin (), A.end ());
     finish = now ();
     duration = subtract_time (finish, start);
     V.push_back (duration);

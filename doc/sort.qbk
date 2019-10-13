@@ -1,8 +1,8 @@
 [library Boost.Sort
   [quickbook 1.7]
   [id sort]
-  [copyright 2014-2017 Steven Ross, Francisco Tapia, Orson Peters]
-  [authors [Ross, Steven] [Tapia, Francisco] [Peters, Orson]]
+  [copyright 2014-2019 Steven Ross, Francisco Tapia, Orson Peters, Malte Skarupke]
+  [authors [Ross, Steven] [Tapia, Francisco] [Peters, Orson], [Skarupke, Malte]]
   [dirname sort]
   [license Distributed under the
     [@http://boost.org/LICENSE_1_0.txt Boost Software License,  Version 1.0].

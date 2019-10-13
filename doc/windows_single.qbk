@@ -1,5 +1,5 @@
 [/===========================================================================
- Copyright (c) 2017 Steven Ross, Francisco Tapia, Orson Peters
+ Copyright (c) 2019 Steven Ross, Francisco Tapia, Orson Peters, Malte Skarupke
 
 
  Distributed under the Boost Software License, Version 1.0
@@ -7,7 +7,7 @@
  http://www.boost.org/LICENSE_1_0.txt
 =============================================================================/]
 
-[section:windows_single 2.6.- Windows Benchmarks]
+[section:windows_single 2.7.- Windows Benchmarks]
 
 [:
 This library contains a benchmark folder with programs to measure the speed of the algorithms on your machine and operating system.

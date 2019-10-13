@@ -51,6 +51,7 @@ using bsort::flat_stable_sort;
 using bsort::spinsort;
 using bsort::spreadsort::spreadsort;
 using bsort::pdqsort;
+using bsort::ska_sort;
 
 
 template <class IA>
@@ -121,6 +122,7 @@ int main(int argc, char *argv[])
     cout << "============================================================\n";
     cout << "\n\n";
 
+#if 0
     //-----------------------------------------------------------------------
     //                  I N T _ A R R A Y < 1 >
     //-----------------------------------------------------------------------
@@ -131,6 +133,7 @@ int main(int argc, char *argv[])
     cout << "************************************************************\n";
 
     Test_size<int_array<1> >(NELEM);
+#endif
 
     //-----------------------------------------------------------------------
     //                  I N T _ A R R A Y < 4 >
@@ -180,21 +183,22 @@ void Test_size ( uint64_t N)
 {
     cout<<"\n";
     cout<<"[ 1 ] std::sort   [ 2 ] pdqsort          [ 3 ] std::stable_sort \n";
-    cout<<"[ 4 ] spinsort    [ 5 ] flat_stable_sort [ 6 ] spreadsort\n\n";
+    cout<<"[ 4 ] spinsort    [ 5 ] flat_stable_sort [ 6 ] spreadsort\n";
+    cout<<"[ 7 ] ska_sort\n\n";
 
     cout << "                    |   [ 1 ]   |   [ 2 ]   |   [ 3 ]   |";
-    cout << "   [ 4 ]   |   [ 5 ]   |   [ 6 ]   |\n";
+    cout << "   [ 4 ]   |   [ 5 ]   |   [ 6 ]   |   [ 7 ]   |\n";
 
 
 
     //cout << "                    |           |           |           |";
     //cout << "           |           |           |\n";
     cout << "                    |  H     L  |  H     L  |  H     L  |";
-    cout << "  H     L  |  H     L  |  H     L  |\n";
+    cout << "  H     L  |  H     L  |  H     L  |  H     L  |\n";
     cout << "--------------------+-----------+-----------+-----------+";
-    cout << "-----------+-----------+-----------+\n";
+    cout << "-----------+-----------+-----------+-----------+\n";
     std::string empty_line = "                    |           |           |"
-                         "           |           |           |           |\n";
+                         "           |           |           |           |           |\n";
 
     cout<<"random              |";
     Generator_random<IA>(N);
@@ -245,7 +249,7 @@ void Test_size ( uint64_t N)
     cout<<"rv sorted +  10% mid|";
     Generator_reverse_sorted_middle<IA>(N, N / 10);
     cout<< "--------------------+-----------+-----------+-----------+";
-    cout << "-----------+-----------+-----------+\n";
+    cout << "-----------+-----------+-----------+-----------+\n";
     cout<<endl<<endl<<endl;
 }
 void Print_vectors ( std::vector<double> & V1, std::vector<double> & V2)
@@ -548,6 +552,13 @@ int Test (std::vector<IA> &B, rightshift shift, compare comp,std::vector<double>
     A = B;
     start = now ();
     boost::sort::spreadsort::integer_sort (A.begin (), A.end (), shift, comp);
+    finish = now ();
+    duration = subtract_time (finish, start);
+    V.push_back (duration);
+
+    A = B;
+    start = now ();
+    ska_sort (A.begin (), A.end (), comp);
     finish = now ();
     duration = subtract_time (finish, start);
     V.push_back (duration);

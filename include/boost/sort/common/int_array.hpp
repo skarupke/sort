@@ -57,6 +57,10 @@ struct H_comp
     {
         return (A1.counter() < A2.counter());
     };
+    uint64_t operator()(const IA & A) const
+    {
+        return A.counter();
+    }
 };
 
 template<class IA>
@@ -66,6 +70,10 @@ struct L_comp
     {
         return (A1.M[0] < A2.M[0]);
     };
+    uint64_t operator()(const IA & A) const
+    {
+        return A.M[0];
+    }
 };
 //***************************************************************************
 };//    End namespace benchmark

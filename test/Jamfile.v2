@@ -61,5 +61,60 @@ import testing ;
                     cxx11_noexcept
                     cxx11_thread_local
                     cxx11_lambdas ] <optimization>speed <threading>multi : test_parallel_stable_sort ]
+
+  [ run ska_sort_tests/test_unroll_loop.cpp
+       : : : [ requires
+                    cxx17_if_constexpr ]
+                 <cxxstd>17 : test_unroll_loop ]
+
+  [ run ska_sort_tests/test_ska_sort_memory.cpp
+       : : : [ requires
+                    cxx17_if_constexpr ]
+                 <cxxstd>17 : test_ska_sort_memory ]
+
+  [ run ska_sort_tests/test_ska_sort_optional.cpp
+       : : : [ requires
+                    cxx17_if_constexpr
+                    cxx17_hdr_optional ]
+                 <cxxstd>17 : test_ska_sort_optional ]
+
+  [ run ska_sort_tests/test_ska_sort_variant.cpp
+       : : : [ requires
+                    cxx17_if_constexpr
+                    cxx17_hdr_variant ]
+                 <cxxstd>17 : test_ska_sort_variant ]
+
+  [ run ska_sort_tests/test_ska_sort_tuple.cpp
+       : : : [ requires
+                    cxx17_if_constexpr ]
+                 <cxxstd>17 : test_ska_sort_tuple ]
+
+  [ run ska_sort_tests/test_ska_sort_simple.cpp
+       : : : [ requires
+                    cxx17_if_constexpr ]
+                 <cxxstd>17 : test_ska_sort_simple ]
+
+  [ run ska_sort_tests/test_ska_sort_big.cpp
+       : : : [ requires
+                    cxx17_if_constexpr ]
+                 <cxxstd>17 : test_ska_sort_big ]
+
+  [ run ska_sort_tests/test_ska_sort_string.cpp
+       : : : [ requires
+                    cxx17_if_constexpr ]
+                 <cxxstd>17 : test_ska_sort_string ]
+
+  [ run ska_sort_tests/test_ska_sort_simple_container.cpp
+       : : : [ requires
+                    cxx17_if_constexpr ]
+                 <cxxstd>17 : test_ska_sort_simple_container ]
+
+  [ run ska_sort_tests/test_ska_sort_nested_container.cpp
+       : : : [ requires
+                    cxx17_if_constexpr ]
+                 <cxxstd>17 : test_ska_sort_nested_container ]
+
+  [ run ska_sort_tests/test_fixed_size_bit_set.cpp
+       : : : <cxxstd>17 : test_fixed_size_bit_set ]
    ;
 }

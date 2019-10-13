@@ -45,6 +45,7 @@ using bsort::spinsort;
 using bsort::flat_stable_sort;
 using bsort::spreadsort::spreadsort;
 using bsort::pdqsort;
+using bsort::ska_sort;
 
 void Generator_random (void);
 void Generator_sorted(void);
@@ -73,12 +74,13 @@ int main(int argc, char *argv[])
     cout << std::endl;
 
     cout<<"[ 1 ] std::sort   [ 2 ] pdqsort          [ 3 ] std::stable_sort \n";
-    cout<<"[ 4 ] spinsort    [ 5 ] flat_stable_sort [ 6 ] spreadsort\n\n";
-    cout<<"                    |      |      |      |      |      |      |\n";
-    cout<<"                    | [ 1 ]| [ 2 ]| [ 3 ]| [ 4 ]| [ 5 ]| [ 6 ]|\n";
-    cout<<"--------------------+------+------+------+------+------+------+\n";
+    cout<<"[ 4 ] spinsort    [ 5 ] flat_stable_sort [ 6 ] spreadsort\n";
+    cout<<"[ 7 ] ska_sort\n\n";
+    cout<<"                    |      |      |      |      |      |      |      |\n";
+    cout<<"                    | [ 1 ]| [ 2 ]| [ 3 ]| [ 4 ]| [ 5 ]| [ 6 ]| [ 7 ]|\n";
+    cout<<"--------------------+------+------+------+------+------+------+------+\n";
     std::string empty_line =
-           "                    |      |      |      |      |      |      |\n";
+           "                    |      |      |      |      |      |      |      |\n";
 
     cout<<"random              |";
     Generator_random ();
@@ -129,7 +131,7 @@ int main(int argc, char *argv[])
     cout<<"rv sorted +  10% mid|";
     Generator_reverse_sorted_middle(NMAXSTRING / 10);
 
-    cout<<"--------------------+------+------+------+------+------+------+\n";
+    cout<<"--------------------+------+------+------+------+------+------+------+\n";
     cout<<endl<<endl ;
     return 0;
 }
@@ -337,6 +339,13 @@ int Test (std::vector<IA> &B,  compare comp)
     A = B;
     start = now ();
     spreadsort (A.begin (), A.end ());
+    finish = now ();
+    duration = subtract_time (finish, start);
+    V.push_back (duration);
+
+    A = B;
+    start = now ();
+    ska_sort (A.begin (), A.end ());
     finish = now ();
     duration = subtract_time (finish, start);
     V.push_back (duration);

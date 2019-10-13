@@ -20,5 +20,6 @@ Cumulative include for the Boost Sort library
 #include <boost/sort/block_indirect_sort/block_indirect_sort.hpp>
 #include <boost/sort/sample_sort/sample_sort.hpp>
 #include <boost/sort/parallel_stable_sort/parallel_stable_sort.hpp>
+#include <boost/sort/ska_sort/ska_sort.hpp>
 
 #endif

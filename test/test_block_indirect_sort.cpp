@@ -19,7 +19,7 @@
 #include <ciso646>
 #include <boost/test/included/test_exec_monitor.hpp>
 #include <boost/test/test_tools.hpp>
-#include <boost/sort/sort.hpp>
+#include <boost/sort/block_indirect_sort/block_indirect_sort.hpp>
 
 
 namespace bsc = boost::sort::common;
