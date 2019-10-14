@@ -19,19 +19,6 @@ template<typename T>
 struct ska_sorter<std::optional<T>>
 {
     template<typename Sorter>
-    static void sort_after_bool(Sorter & sorter)
-    {
-        if (sorter.first_item().has_value())
-        {
-            sorter.sort([](const std::optional<T> & value) -> const T &
-            {
-                return *value;
-            });
-        }
-        else
-            sorter.skip();
-    }
-    template<typename Sorter>
     void operator()(Sorter & sorter)
     {
         sorter.sort([](const std::optional<T> & value) -> bool
@@ -39,23 +26,24 @@ struct ska_sorter<std::optional<T>>
             return value.has_value();
         }, &sort_after_bool<Sorter>);
     }
+
+	template<typename Sorter>
+	static void sort_after_bool(Sorter & sorter)
+	{
+		if (sorter.first_item().has_value())
+		{
+			sorter.sort([](const std::optional<T> & value) -> const T &
+			{
+				return *value;
+			});
+		}
+		else
+			sorter.skip();
+	}
 };
 template<typename T>
 struct ska_sorter<boost::optional<T>>
 {
-    template<typename Sorter>
-    static void sort_after_bool(Sorter & sorter)
-    {
-        if (sorter.first_item().has_value())
-        {
-            sorter.sort([](const boost::optional<T> & value) -> const T &
-            {
-                return *value;
-            });
-        }
-        else
-            sorter.skip();
-    }
     template<typename Sorter>
     void operator()(Sorter & sorter)
     {
@@ -64,6 +52,20 @@ struct ska_sorter<boost::optional<T>>
             return value.has_value();
         }, &sort_after_bool<Sorter>);
     }
+
+	template<typename Sorter>
+	static void sort_after_bool(Sorter & sorter)
+	{
+		if (sorter.first_item().has_value())
+		{
+			sorter.sort([](const boost::optional<T> & value) -> const T &
+			{
+				return *value;
+			});
+		}
+		else
+			sorter.skip();
+	}
 };
 
 }

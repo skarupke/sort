@@ -9,4 +9,407 @@
 
 [section:ska_sort 2.1.-ska_sort]
 
+[def __sort_key_section [link sort.single_thread.ska_sort.overview.sort_key Sort Key]]
+
+[section:overview Overview]
+
+[section:intro Introduction]
+
+ska_sort is a generalization of [@https://en.wikipedia.org/wiki/Radix_sort MSD radix sort]. Radix sort has long been known to be the fastest sorting algorithm for integers. It has also been generalized to work on floats and strings, and ska_sort generalizes it further so that it works for most types. The only case where comparison based sorting can be faster is for data that is already sorted or nearly sorted, in which case *spinsort* is a good choice, but on unsorted data ska_sort will be much faster than any comparison based sorting algorithm.
+
+[endsect] [/section:intro]
+
+[section:sort_key Sort Key]
+
+Since ska_sort doesn't use comparisons for sorting, you instead provide a single sort key for your type to sort, similar to the projections in the C++20 std::ranges::sort. Sorting simple types work just the same as std::sort. Both of these sort calls will have the same behavior:
+
+[c++]
+``
+   std::vector<int> data = //...
+   std::sort(data.begin(), data.end());
+   ska_sort(data.begin(), data.end());
+``
+
+In this case, since we're just sorting ints, ska_sort works the same as std::sort. But if something has a custom comparison function, we have to change the code to provide a sort key instead for ska_sort:
+
+``
+   struct Foo { int size; };
+   std::vector<Foo> data = //...
+   std::sort(data.begin(), data.end(), [](const Foo & l, const Foo & r){ return l.size < r.size; });
+   ska_sort(data.begin(), data.end(), [](const Foo & f){ return f.size; });
+``
+
+In this case we're sorting by a member of struct Foo. Where std::sort expected a comparison function, ska_sort expects a function that exposes the sort key. These two calls will again in the same sort order.
+
+For more complex comparisons, ska_sort supports pairs or tuples as sort keys:
+
+``
+   struct Bar
+   {
+     std::string name;
+     int priority;
+   };
+   std::vector<Bar> data = //...
+   
+   std::sort(data.begin(), data.end(), [](const Bar & l, const Bar & r)
+   {
+     if (l.name < r.name)
+       return true;
+     else if (r.name < l.name)
+       return false;
+     else
+       return l.priority < l.priority;
+   });
+   
+   ska_sort(data.begin(), data.end(), [](const Bar & b)
+   {
+     return std::tuple<std::string &, int>(b.name, b.priority);
+   });
+``
+
+In this case we sort first by the name, and if the name is identical we sort by priority. For std::sort we have implemented the same behavior as lexicographical_compare. ska_sort follows the same behavior if your key is a pair or tuple. One important detail here is that we return a *std::string &*, meaning the string is returned as a reference, not as a copy. Copying a string is expensive and would have made this very slow since this function will be called several times for the same object.
+
+In general it is worth pointing out that *by default lambads return copies*. If your sort key is big, like a std::string or a std::vector<int>, you have to declare the return type of the lambda as `decltype(auto)` so that the key gets returned by reference, not by copy.
+
+The following types are supported as sort keys:
+
+* bool
+* all int and char types
+* all float types
+* pointers, std::unique_ptr and std::shared_ptr
+* std::pair and std::tuple of supported types
+* containers of supported types
+* std::optional of supported types
+* std::variant of supported types
+
+For containers ska_sort will call the begin() and end() functions. Importantly, if your container returns a random access iterator, ska_sort will take a much faster code path. If not, it will silently fall back to the code path for forward iterators. That being said ska_sort, just like std::sort, does not support forward iterators for the outermost container. Sorting a `std::vector<std::list<int>>` is supported, but sorting a `std::list<std::vector<int>>` is not.
+
+Adding support for more types is easy and is covered in the section [link sort.single_thread.ska_sort.supporting_more_types Supporting More Types]. The most common case for this is if your sort key is a container of an unsupported type, for example if you're trying to sort a `std::vector<std::vector<Foo>>`. In that case `Foo` has to be added as a supported type.
+
+[endsect] [/section:sort_key]
+
+[section:performance Performance]
+
+When sorting a vector of random integers, here is how long various sorting algorithms take:
+
+[$../images/sorting_ints.png]
+
+The X axis lists the size of the vector, the Y axis lists how long the sorting algorithm took per item. Meaning if there were 1,000 items in the vector and the algorithm took 15ns per item, sorting the vector took 15,000ns in total. Visualizing the time like this makes direct comparisons easier. For example we can see that ska_sort can be more than twice as fast as std::sort.
+
+The next graph compares the time when sorting a vector of random floats:
+
+[$../images/sorting_floats.png]
+
+This graph shows the time when sorting random strings:
+
+[$../images/sorting_strings.png]
+
+The strings in this last benchmark were constructed by concatenating several random words from [@https://en.wikipedia.org/wiki/Words_(Unix) a dictionary].
+
+[endsect] [/section:performance]
+
+[section:ska_sort_small_key_large_value ska_sort_small_key_large_value]
+
+Sometimes, when you have a large type or a type that's expensive to move for other reasons, you just want to create a temporary vector that only contains the sort key, sort that vector, and then move the large type into the same positions indicated by the temporary vector.
+
+`ska_sort_small_key_large_value` implements exactly that behavior: It creates a temporary vector built out of your sort key and sorts that vector. Then it moves all objects directly into the right slot in n+1 moves. The interface for this is identical to ska_sort, except that the sort key is required instead of optional.
+
+Since there is significant overhead in creating a temporary vector, this is only worth it if your type is very expensive to move. If your type is 512 bytes in size or larger, this should be faster than normal ska_sort, but this will vary by platform so measure to confirm that it actually is faster.
+
+[endsect] [/section:ska_sort_small_key_large_value]
+
+[endsect] [/section:overview]
+
+[section:supporting_more_types Supporting More Types]
+
+The most common way of supporting custom types is to supply a lambda when calling ska_sort, as shown in the section __sort_key_section. In some cases that is not possible, for example when the key is a container of an unsupported type, like when trying to sort a `std::vector<std::vector<Bar>>`. The easiest way to add support for foo is to implement the function *to_radix_sort_key* in the same namespace as Bar:
+
+```
+   struct Bar
+   {
+     float temperature;
+     friend bool operator<(const Bar & l, const Bar & r)
+     {
+       return l.temperature < r.temperature;
+     }
+   };
+
+   int to_radix_sort_key(const Bar & b)
+   {
+     return b.temperature;
+   }
+
+   std::vector<std::vector<Bar>> data = // ...
+   std::sort(data.begin(), data.end());
+   ska_sort(data.begin(), data.end());
+```
+
+Here, to use std::sort we had to implement `operator<()`, and to use ska_sort we had to implement `to_radix_sort_key()`. In this case, since `operator<()` compared by temperature, we had to return the temperature from `to_radix_sort_key`.
+
+If a struct implements `operator<()` then `to_radix_sort_key` should always return the same key as was used in `operator<()`. Since ska_sort falls back to comparison based sorting in certain cases, it will sometimes have to call `operator<()`. If the two functions have different behavior, you will get an unspecified sort order. The exact circumstances under which a difference would cause problems are complicated, so things may seem to work fine until you try to sort more complex types, like `std::variant<Foo, Bar>`, and even then problems may not appear right away.
+
+If you can not implement `to_radix_sort_key` in the same namespace as the struct (maybe because it is provided by an external library that you don't control) you can alternatively specialize the `struct boost::sort::ska_sorter`. This struct has a slightly more complex interface since it can support many advanced use cases, but for simple types the implementation can be straightforward. For example here is the implementation for std::unique_ptr, which is just sorted using its internal pointer as the sort key:
+
+```
+   template<typename T, typename D>
+   struct ska_sorter<std::unique_ptr<T, D>>
+   {
+     template<typename Sorter>
+     void operator()(Sorter & sorter)
+     {
+       return sorter.sort([](const std::unique_ptr<T, D> & ptr)
+       {
+         return ptr.get();
+       });
+     }
+   };
+```
+
+To implement ska_sorter you have to provide a templated operator() which takes the current state of the sorting algorithm. Since std::unique_ptr is a simple case which just provides a single pointer as a sort key, all we had to do in this case was call `sort()` on the argument and provide a lambda that can extract the sort key. (which in this case is just the pointer returned from get()) The lambda that is provided to `sort()` in the above example works exactly like the lambda passed to `ska_sort` in the section __sort_key_section. So if you need to sort on more than one key, you can also return a pair or tuple from this lambda.
+
+[section:custom_containers Custom Containers]
+
+This section talks about sorting nested containers. This should be a rare use case, for example when sorting a `std::vector<YourContainer<int>>`. If your container is the outer type, then it only needs to provide random access iterators, just like it needs to for std::sort. But if your container is nested, ska_sort has to know how to iterate through the container.
+
+By default ska_sort will treat anything that has a `begin()` and `end()` function as a container. (both member and non-member functions work) If your container doesn't provide `begin()` and `end()` functions, and you can't easily implement it, ska_sort provides a specialization point in the `struct boost::sort::ska_sort_container_access`. The struct can be implemented like this:
+
+```
+   template<typename T>
+   struct boost::sort::ska_sort_container_access<YourContainer<T>>
+   {
+       static const T * begin(const YourContainer<T> & container)
+       {
+           return &container[0];
+       }
+       static const T * end(const YourContainer<T> & container)
+       {
+           return &container[container.size()];
+       }
+   };
+```
+
+In this example `YourContainer` provides `operator[]` but no `begin()` and `end()` calls. By specializing `boost::sort::ska_sort_container_access` like this we can explain to ska_sort how to call `begin()` and `end()` on `YourContainer`.
+
+[endsect] [/section:custom_containers]
+
+[section:examples_of_converting_from_std_sort Examples of Converting from std::sort]
+
+All the examples so far have shown the equivalent code for `std::sort` and `ska_sort` next to each other. So for simple cases refer back to the section __sort_key_section. Here are some more complicated conversions from std::sort to ska_sort:
+
+```
+   struct Programmer
+   {
+     std::string first_name;
+     std::string last_name;
+   };
+   std::vector<Programer> programmers = // ...
+
+   std::sort(programmers.begin(), programmers.end(), [](const Programmer & l, const Programmer & r)
+   {
+     if (l.last_name < r.last_name)
+       return true;
+     else if (r.last_name < l.last_name)
+       return false;
+     else
+       return l.first_name < r.first_name;
+   });
+
+   ska_sort(programmers.begin(), programmers.end(), [](const Programmer & p)
+   {
+     return std::tie(p.last_name, p.first_name);
+   });
+```
+
+In this example we are sorting on two strings. `std::tie` creates references to those strings. Calling `std::make_tuple` here instead would have created copies, which would have been very slow. We are first sorting by `last_name` and only if two programmers have the same last name do we sort by their first name.
+
+
+```
+   std::vector<float> data = // ...
+   std::sort(data.begin(), data.end(), [](float l, float r){ return l > r; });
+   ska_sort(data.begin(), data.end(), [](float f){ return -f; });
+```
+
+std::sort was using a greater-than comparison in order to sort backwards. In ska_sort negating the float will sort backwards.
+
+```
+   struct EnemyInfo
+   {
+     bool is_in_combat_with_player;
+     float distance_to_player;
+   };
+   std::vector<EnemyInfo> data = // ...
+
+   std::sort(data.begin(), data.end(), [](const EnemyInfo & l, const EnemyInfo & r)
+   {
+     if (l.is_in_combat_with_player == r.is_in_combat_with_player)
+       return l.distance_to_player < r.distance_to_player;
+     else
+       return l.is_in_combat_with_player;
+   });
+
+   ska_sort(data.begin(), data.end(), [](const EnemyInfo & e)
+   {
+     return std::make_tuple(!e.is_in_combat_with_player, e.distance_to_player);
+   });
+```
+
+This example is slightly more complicated. We want to sort all enemies by their distance to the player. But we want all enemies that are currently in combat to come first, sorted by distance, then all enemies that are not in combat, also sorted by distance. The old code was returning true for enemies that were in combat, but in ska_sort we have to flip the boolean because `false` sorts before `true`. Also in this example we use `std::make_tuple` instead of `std::tie` for two reasons: Firstly because we are returning small types, so copying is cheaper, and secondly because negating a boolean creates a temporary variable, and we can't return a reference to a temporary variable.
+
+```
+   std::sort(m_DataLookup.begin(), m_DataLookup.end(), [](const SSDBSortInfo& i1, const SSDBSortInfo& i2)
+   {
+     uint32_t pureKey1 = i1.m_Key & SSDUserDataMaskOut;
+     uint32_t pureKey2 = i2.m_Key & SSDUserDataMaskOut;
+     return pureKey1 < pureKey2;
+   });
+   ska_sort(m_DataLookup.begin(), m_DataLookup.end(), [](const SSDBSortInfo& i)
+   {
+     return i.m_Key & SSDUserDataMaskOut;
+   });
+```
+
+This case was only sorting on some of the bits of the key. The ska_sort code is actually simpler because it only has to do the bit masking once.
+
+```
+   auto compare = [](const auto & a, const auto & b)
+   {
+     if (a.sender_id == b.sender_id)
+       return a.receiver_id < b.receiver_id;
+     return a.sender_id < b.sender_id;
+   };
+   std::sort(m_Senders.begin(), m_Senders.end(), compare);
+   std::sort(m_Receivers.begin(), m_Receivers.end(), compare);
+
+   auto sort_key = [](const auto & a)
+   {
+     return std::make_pair(a.sender_id, a.receiver_id);
+   };
+   ska_sort(m_Senders.begin(), m_Senders.end(), sort_key);
+   ska_sort(m_Receivers.begin(), m_Receivers.end(), sort_key);
+```
+
+This code was using a generic lambda to sort two arrays of different types in the same order. The same trick is used in the ska_sort version. In this case we're using `std::make_pair` because the returned types are small. (`std::make_tuple` would have also worked, there is no difference in behavior)
+
+[endsect] [/section examples_of_converting_from_std_sort]
+
+[section:advanced_and_rare_cases Advanced and Rare Cases]
+
+This section covers cases that most users should never run into. Most use cases should be covered in the section __sort_key_section or in the [link sort.single_thread.ska_sort.supporting_more_types.examples_of_converting_from_std_sort examples].
+
+[section:custom_variants_or_optionals Custom Variants or Optionals]
+
+Usually when you want to sort a struct by multiple keys you can return a pair or tuple from your sort key function. But on some structs, like `std::variant` or `std::optional` you don't know which value to return until after you have finished with the comparison for the variant index or the optional state. If you have a custom implementation of `std::variant` or an equivalent class, this section explains how to add support for that to ska_sort. If you use the standard types, support is built-in and you can ignore this section.
+
+For any advanced cases like this, you need to specialize `boost::sort::ska_sorter` for your custom variant type. To explain how to do that, let's start with the simpler case of how this is implemented for `std::optional`:
+
+```
+   template<typename T>
+   struct ska_sorter<std::optional<T>>
+   {
+     template<typename Sorter>
+     void operator()(Sorter & sorter)
+     {
+       sorter.sort([](const std::optional<T> & value) -> bool
+       {
+         return value.has_value();
+       }, &sort_after_bool<Sorter>);
+     }
+
+     template<typename Sorter>
+     static void sort_after_bool(Sorter & sorter)
+     {
+       if (sorter.first_item().has_value())
+       {
+         sorter.sort([](const std::optional<T> & value) -> const T &
+         {
+           return *value;
+         });
+       }
+       else
+         sorter.skip();
+     }
+   };
+```
+
+The basics of implementing a ska_sorter are shown in the section [link sort.single_thread.ska_sort.supporting_more_types Supporting More Types]. Just as in that section, we start off by implementing `operator()` which takes a templated Sorter. On that struct we call `sort()` but where before we only had one argument, the lambda to extract the sort key, now we have a second one: A function pointer to `sort_after_bool`. This indicates to ska_sort that we want to first sort on `has_value()` and after that `sort_after_bool` will decide what happens next.
+
+`sort_after_bool` will be called after sorting on `has_value()` is done, splitting the list into two sections. We have recursed into one of the two sections and either all optionals in the current section had a value, or all of them didn't. To check which case we fall into we request the `first_item()` from the sorter, which will be a std::optional. (this function wouldn't be called if the current section was empty, so there will always be a first item) If the first item has a value, we can assume that they all do and we simply call `sort()` with a sort key where we unwrap the std::optional.
+
+In the other case we call `sorter.skip()` to indicate that since these optionals have no value, there is nothing to do for this section. If we didn't call `skip()` the code would assert. The reason for this is that while there is nothing to do for an optional in isolation, there may be more to do on a bigger scope. For example when sorting a `std::vector<std::pair<std::optional<int>, float>>`. In that case when we are done sorting on the optional, we still have to sort on the float. The `skip()` call will do that.
+
+The code for std::variant is too complex to explain in this documentation since it deals with variadic templates. But it follows the same pattern of first sorting on the variant index, and after that's done it sorts on one of the values. See [@../../include/boost/sort/ska_sort/ska_sort_variant.hpp ska_sort_variant.hpp] for the implementation.
+
+[endsect] [/section:custom_variants_or_optionals]
+
+[section:containers_with_custom_ordering Containers with Custom Ordering]
+
+When sorting nested containers, like a `std::vector<std::deque<int>>`, some containers can have custom ordering. ska_sort currently does not support that, instead it always sorts them one item at a time. Meaning it first sorts by the first item in the container, and if that item is equal, it sorts by the second item etc.
+
+In certain cases ska_sort falls back to comparison based sorting, and in those cases it uses `std::lexicographical_compare` on the nested container, continuing from its current position in the container. (meaning if the first four items were already sorted, it will call `std::lexicographical_compare` starting at the fifth item)
+
+If your container does not return the same sort order in `std::lexicographical_compare` as when sorting one item at a time, this can lead to problems. The most prominent example of this is `std::string` which can have a custom comparison function in its Traits class. On Linux that custom comparison treats `char` as unsigned, but `std::lexicographical_compare` treats them as signed. Since ska_sort wants to sort in the same order as std::sort, it has to also treat chars as unsigned.
+
+To resolve this disagreement ska_sort provides a specialization point that can be used to override the default `std::lexicographical_compare`. That specialization point is called `boost::sort::ska_sort_container_compare`. For std::basic_string it is implemented like this:
+
+```
+   template<typename C, typename T, typename A>
+   struct ska_sort_container_compare<std::basic_string<C, T, A>>
+   {
+     using const_iterator = typename std::basic_string<C, T, A>::const_iterator;
+     static bool lexicographical_compare(const_iterator l_it, const_iterator l_end, const_iterator r_it, const_iterator r_end)
+     {
+       size_t l_size = l_end - l_it;
+       size_t r_size = r_end - r_it;
+       bool l_is_smaller = l_size < r_size;
+       int compare_result = T::compare(std::addressof(*l_it), std::addressof(*r_it), l_is_smaller ? l_size : r_size);
+       if (compare_result == 0)
+         return l_is_smaller;
+       else
+         return compare_result < 0;
+     }
+   };
+```
+
+With this implementation of `lexicographical_compare` we are using the `compare()` function of the traits class and the characters are treated as unsigned, and we get the same behavior as sorting one item at a time.
+
+This customization point should be a rare use case and you will probably not need this for your own containers.
+
+[endsect] [/section:containers_with_custom_ordering]
+
+[section:full_interface_of_ska_sorter Full Interface of ska_sorter]
+
+In the section [link sort.single_thread.ska_sort.supporting_more_types.advanced_and_rare_cases.custom_variants_or_optionals Custom Variants or Optionals] we have seen that when implementing advanced types, ska_sorter offers more features than just sorting with a custom key. There are more advanced features available which were added for performance reasons. These are not necessary to know for 99.9% of users, but may provide a small performance boost in certain cases.
+
+The interface we are discussing here are the functions that you can call in ska_sorter on the templatized Sorter struct that gets passed in. We already saw examples that simply call `sort()` or `skip()` in the [link sort.single_thread.ska_sort.supporting_more_types.advanced_and_rare_cases.custom_variants_or_optionals std::optional implementation]. The full list of available functions is:
+
+* `sort`
+* `sort_with_faster_comparison`
+* `sort_backwards`
+* `sort_backwards_with_faster_comparison`
+* `first_item`
+* `for_each_item`
+* `skip`
+* `std_sort_fallback`
+* `sort_with_proxy`
+
+The functions `sort`, `sort_with_faster_comparison`, `sort_backwards` and `sort_backwards_with_faster_comparison` each have optional overloads that take a function pointer for the sort function to call next. (as seen in the implementation in std::optional) They can also pass one argument to that function pointer by value. The optional argument is used in the sorting code for containers to count how many times we have recursed.
+
+The `faster_comparison` versions of `sort` and `sort_backwards` can be used to provide a custom comparison function that is known to be faster than normal comparison. This is used when sorting floats: Once we are done sorting on the first two bytes, they will be compared as ints instead of floats, because at that point we only need to compare the mantissa, which can be done as an int comparison. They are also used when sorting containers, because we can skip comparing the elements again that are already sorted.
+
+`first_item` returns the first item in the section that should currently be sorted. If the current section is already sorted by a previous call, then first_item can be used to find out in which sub-section we are.
+
+`for_each_item` iterates through all items in the current section. This is used when sorting containers to detect if they all have a common prefix and to skip ahead if that's the case. (this really helps when sorting long strings like in log files)
+
+`skip` is used to indicate that we don't need to do anything for the current section at the current scope.
+
+`std_sort_fallback` is used to fall back to comparison based sorting. This is used when sorting containers if we recurse too many times. (there are certain patterns that are really bad for radix sort) This function also takes an optional comparison function for the cases discussed in the `faster_comparison` section above.
+
+`sort_with_proxy` is for the use case where you have a small key but a large value. It creates a temporary vector with the provided sort key. It will then sort that vector and once that temporary vector is sorted, it will sort the original vector with the information from the temporary vector. This results in fewer moves for the original data, but there is more overhead in creating the temporary vector. This is used both for `ska_sort_small_key_large_value` and for sorting nested containers that only provide forward iterators. In that case it was convenient to create a small struct that stores the current state of how far we have advanced within each container.
+
+[endsect] [/section:full_interface_of_ska_sorter]
+
+[endsect] [/section:advanced_and_rare_cases]
+
+[endsect] [/section:supporting_more_types]
+
 [endsect] [/section:ska_sort]

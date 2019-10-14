@@ -7,7 +7,7 @@
  http://www.boost.org/LICENSE_1_0.txt
 =============================================================================/]
 
-[section:pdqsort 2.3.- pdqsort]
+[section:pdqsort 2.2.- pdqsort]
 
 [def __std_sort [@http://en.cppreference.com/w/cpp/algorithm/sort std::sort]]
 [def __std_stable_sort [@http://en.cppreference.com/w/cpp/algorithm/stable_sort std::stable_sort]]

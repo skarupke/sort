@@ -12,7 +12,7 @@ clang++ ./file_generator.cpp -std=c++17 -march=native -w -fexceptions -O3 -I../.
 clang++ ./benchmark_strings.cpp -std=c++17 -march=native -w -fexceptions -O3 -I../../include -s  -o benchmark_strings
 
 echo "R U N N I N G . . . . . . . . . . ."
-echo "( The time needed is around 10 minutes depending of your machine )"
+echo "( The time needed is around 10 minutes depending on your machine )"
 ./file_generator input.bin 125000000
 echo "."
 date

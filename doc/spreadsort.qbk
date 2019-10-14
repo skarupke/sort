@@ -7,7 +7,7 @@
  http://www.boost.org/LICENSE_1_0.txt
 =============================================================================/]
 
-[section:spreadsort 2.2.-Spreadsort]
+[section:spreadsort 2.5.-Spreadsort]
 
 [/ Some composite templates]
 [template super[x]'''<superscript>'''[x]'''</superscript>''']

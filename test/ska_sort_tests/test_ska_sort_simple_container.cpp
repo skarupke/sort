@@ -7,6 +7,7 @@
 #include <deque>
 #include <vector>
 #include <list>
+#include <forward_list>
 
 void test_deque()
 {
@@ -113,6 +114,17 @@ void test_vector_of_list()
     test_default_ska_sort_combinations(to_sort);
 }
 
+void test_vector_of_forward_list()
+{
+    std::vector<std::forward_list<int>> to_sort =
+    {
+        { 1, 2, 3 },
+        { 1, 2, 2 },
+        { 0, 1, 2 }
+    };
+    test_default_ska_sort_combinations(to_sort);
+}
+
 int test_main(int, char **)
 {
     test_deque();
@@ -121,6 +133,7 @@ int test_main(int, char **)
     test_string_in_vector();
     test_std_array();
     test_vector_of_list();
+    test_vector_of_forward_list();
 
     return 0;
 }
