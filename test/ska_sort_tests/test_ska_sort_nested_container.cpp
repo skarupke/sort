@@ -232,19 +232,6 @@ struct boost::sort::ska_sort_container_access<deque_wrapper<T, A>>
 };
 template<typename T, typename A>
 bool boost::sort::ska_sort_container_access<deque_wrapper<T, A>>::used_container_access = false;
-template<typename T, typename A>
-struct boost::sort::ska_sort_container_compare<deque_wrapper<T, A>>
-{
-    static bool used_container_compare;
-    using const_iterator = typename deque_wrapper<T, A>::const_iterator;
-    static bool lexicographical_compare(const_iterator l_it, const_iterator l_end, const_iterator r_it, const_iterator r_end)
-    {
-        used_container_compare = true;
-        return std::lexicographical_compare(l_it, l_end, r_it, r_end);
-    }
-};
-template<typename T, typename A>
-bool boost::sort::ska_sort_container_compare<deque_wrapper<T, A>>::used_container_compare = false;
 
 static const std::vector<std::vector<int>> container_sort_test_data =
 {
@@ -353,10 +340,8 @@ void test_custom_container_deque()
         to_sort.emplace_back(list.begin(), list.end());
     }
     boost::sort::ska_sort_container_access<deque_wrapper<int>>::used_container_access = false;
-    boost::sort::ska_sort_container_compare<deque_wrapper<int>>::used_container_compare = false;
     test_default_ska_sort_combinations(to_sort);
     BOOST_CHECK(boost::sort::ska_sort_container_access<deque_wrapper<int>>::used_container_access);
-    BOOST_CHECK(boost::sort::ska_sort_container_compare<deque_wrapper<int>>::used_container_compare);
 }
 
 int test_main(int, char **)

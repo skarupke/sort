@@ -30,8 +30,6 @@ struct ska_sorter;
 
 template<typename T>
 struct ska_sort_container_access;
-template<typename T>
-struct ska_sort_container_compare;
 
 namespace detail_ska_sort
 {
@@ -816,7 +814,13 @@ struct by_value_to_unsigned_sorter
     }
     static unsigned char to_unsigned(char c)
     {
-        return static_cast<unsigned char>(c);
+        if constexpr (std::is_signed_v<char>)
+        {
+            constexpr unsigned char sign_bit = 128;
+            return static_cast<unsigned char>(c) ^ sign_bit;
+        }
+        else
+            return static_cast<unsigned char>(c);
     }
     static std::uint16_t to_unsigned(char16_t c)
     {
@@ -1241,7 +1245,7 @@ struct fallback_ska_sorter<T,
         size_t index = 0;
         bool operator()(const T & l, const T & r) const
         {
-            return ska_sort_container_compare<T>::lexicographical_compare(
+            return std::lexicographical_compare(
                         std::next(container_access::begin(l), index),
                         container_access::end(l),
                         std::next(container_access::begin(r), index),
@@ -1364,7 +1368,7 @@ struct fallback_ska_sorter<T,
     {
         bool operator()(const current_iterator_positions & l, const current_iterator_positions & r) const
         {
-            return ska_sort_container_compare<T>::lexicographical_compare(l.it, l.end, r.it, r.end);
+            return std::lexicographical_compare(l.it, l.end, r.it, r.end);
         }
     };
 
@@ -1604,47 +1608,31 @@ struct ska_sorter<std::pair<K, V>>
     }
 };
 
-template<typename T>
-struct ska_sort_container_compare
+// on linux std::string sorts as if char was a unsigned type even though it's a
+// signed type. we need to have the same behavior, so return unsigned chars for
+// the iterators instead of normal chars
+template<>
+struct ska_sort_container_access<std::string>
 {
-    using const_iterator = typename T::const_iterator;
-    static bool lexicographical_compare(const_iterator l_it, const_iterator l_end, const_iterator r_it, const_iterator r_end)
+    static const unsigned char * begin(const std::string & str)
     {
-        return std::lexicographical_compare(l_it, l_end, r_it, r_end);
+        return reinterpret_cast<const unsigned char *>(str.data());
+    }
+    static const unsigned char * end(const std::string & str)
+    {
+        return reinterpret_cast<const unsigned char *>(str.data() + str.size());
     }
 };
-
-template<typename C, typename T, typename A>
-struct ska_sort_container_compare<std::basic_string<C, T, A>>
+template<>
+struct ska_sort_container_access<std::string_view>
 {
-    using const_iterator = typename std::basic_string<C, T, A>::const_iterator;
-    static bool lexicographical_compare(const_iterator l_it, const_iterator l_end, const_iterator r_it, const_iterator r_end)
+    static const unsigned char * begin(std::string_view str)
     {
-        size_t l_size = l_end - l_it;
-        size_t r_size = r_end - r_it;
-        bool l_is_smaller = l_size < r_size;
-        int compare_result = T::compare(std::addressof(*l_it), std::addressof(*r_it), l_is_smaller ? l_size : r_size);
-        if (compare_result == 0)
-            return l_is_smaller;
-        else
-            return compare_result < 0;
+        return reinterpret_cast<const unsigned char *>(str.data());
     }
-};
-
-template<typename C, typename T>
-struct ska_sort_container_compare<std::basic_string_view<C, T>>
-{
-    using const_iterator = typename std::basic_string_view<C, T>::const_iterator;
-    static bool lexicographical_compare(const_iterator l_it, const_iterator l_end, const_iterator r_it, const_iterator r_end)
+    static const unsigned char * end(std::string_view str)
     {
-        size_t l_size = l_end - l_it;
-        size_t r_size = r_end - r_it;
-        bool l_is_smaller = l_size < r_size;
-        int compare_result = T::compare(std::addressof(*l_it), std::addressof(*r_it), l_is_smaller ? l_size : r_size);
-        if (compare_result == 0)
-            return l_is_smaller;
-        else
-            return compare_result < 0;
+        return reinterpret_cast<const unsigned char *>(str.data() + str.size());
     }
 };
 

@@ -84,6 +84,11 @@ void test_string_unicode()
     }
     test_default_ska_sort_combinations(as_views);
 }
+void test_chars_unicode()
+{
+    std::string to_sort = "Hello, World! précis";
+    test_default_ska_sort_combinations(to_sort);
+}
 
 void test_string_unicode_direct_compare()
 {
@@ -124,6 +129,7 @@ int test_main(int, char **)
     test_u32string();
     test_wstring();
     test_string_unicode();
+    test_chars_unicode();
     test_string_unicode_direct_compare();
     test_string_bad_case();
 

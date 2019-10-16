@@ -35,7 +35,7 @@ These algorithms do not use any other library or utility. The parallel algorithm
 
 * *ska_sort* is a generalized version of radix sort. It can sort most types and is faster than comparison based sorts on unsorted data. It was designed and developed by Malte Skarupke.
 
-* *spreadsort* is an extremely fast hybrid radix sort algorithm, designed and developed by Steven Ross. spreadsort is slower and less general than ska_sort and is mostly kept for backwards compatibility.
+* *spreadsort* is a hybrid radix sort algorithm, designed and developed by Steven Ross. spreadsort is slower and less general than ska_sort and is mostly kept for backwards compatibility.
 
 * *pdqsort* is a improvement of the quick sort algorithm, designed and developed by Orson Peters.
 
