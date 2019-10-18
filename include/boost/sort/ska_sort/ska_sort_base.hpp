@@ -832,13 +832,13 @@ struct by_value_to_unsigned_sorter
     }
     static auto to_unsigned(wchar_t c)
     {
+        static_assert(sizeof(wchar_t) == sizeof(std::uint16_t) || sizeof(wchar_t) == sizeof(std::uint32_t));
         if constexpr (sizeof(wchar_t) == sizeof(std::uint16_t))
         {
             return static_cast<std::uint16_t>(c);
         }
         else
         {
-            static_assert(sizeof(wchar_t) == sizeof(std::uint32_t));
             return static_cast<std::uint32_t>(c);
         }
     }
@@ -931,7 +931,6 @@ struct compare_float_as_uint
         else
         {
             uint64_t result;
-            static_assert(sizeof(long double) > sizeof(uint64_t));
             // don't need the top two bytes. I'll only come in here if we're
             // already done sorting the top two bytes
             std::memcpy(&result, &ld, sizeof(result));

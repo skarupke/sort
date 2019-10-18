@@ -94,6 +94,16 @@ import testing ;
                     cxx17_if_constexpr ]
                  <cxxstd>17 : test_ska_sort_simple ]
 
+  [ run ska_sort_tests/test_ska_sort_struct.cpp
+       : : : [ requires
+                    cxx17_if_constexpr ]
+                 <cxxstd>17 : test_ska_sort_struct ]
+
+  [ run ska_sort_tests/test_ska_sort_float.cpp
+       : : : [ requires
+                    cxx17_if_constexpr ]
+                 <cxxstd>17 : test_ska_sort_float ]
+
   [ run ska_sort_tests/test_ska_sort_big.cpp
        : : : [ requires
                     cxx17_if_constexpr ]

@@ -10,7 +10,7 @@ struct american_flag_sort_settings : boost::sort::detail_ska_sort::default_sort_
 {
     template<typename>
     static constexpr std::ptrdiff_t insertion_sort_upper_limit = 1;
-    static constexpr std::ptrdiff_t american_flag_sort_upper_limit = std::numeric_limits<std::ptrdiff_t>::max();
+    static constexpr std::ptrdiff_t american_flag_sort_upper_limit = (std::numeric_limits<std::ptrdiff_t>::max)();
 };
 struct ska_byte_sort_settings : boost::sort::detail_ska_sort::default_sort_settings
 {

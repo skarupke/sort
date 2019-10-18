@@ -7,12 +7,12 @@
 #include <vector>
 #include <random>
 
-template<typename T, typename Randomness>
+template<typename T, typename RandomnessLimits = T, typename Randomness>
 void test_uniform_distribution(Randomness & randomness)
 {
     std::vector<T> to_sort;
     to_sort.reserve(1'000'000);
-    std::uniform_int_distribution<T> distribution(std::numeric_limits<T>::lowest(), std::numeric_limits<T>::max());
+    std::uniform_int_distribution<T> distribution(std::numeric_limits<RandomnessLimits>::lowest(), (std::numeric_limits<RandomnessLimits>::max)());
     while (to_sort.size() != to_sort.capacity())
     {
         to_sort.push_back(distribution(randomness));
@@ -40,7 +40,7 @@ void test_exponential_distribution(Randomness & randomness)
 int test_main(int, char **)
 {
     std::mt19937_64 randomness(5);
-    test_uniform_distribution<uint8_t>(randomness);
+    test_uniform_distribution<int, uint8_t>(randomness);
     test_uniform_distribution<uint16_t>(randomness);
     test_uniform_distribution<int>(randomness);
     test_uniform_distribution<int64_t>(randomness);

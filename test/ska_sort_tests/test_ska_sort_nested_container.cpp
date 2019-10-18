@@ -7,6 +7,7 @@
 #include <deque>
 #include <vector>
 #include <list>
+#include <forward_list>
 
 struct MovableInt
 {
@@ -19,8 +20,8 @@ struct MovableInt
         : i(i)
     {
     }
-    MovableInt(MovableInt &&) = default;
-    MovableInt & operator=(MovableInt &&) = default;
+    MovableInt(MovableInt &&) noexcept = default;
+    MovableInt & operator=(MovableInt &&) noexcept = default;
     MovableInt(const MovableInt &) = delete;
     MovableInt & operator=(const MovableInt &) = delete;
 
@@ -100,8 +101,10 @@ struct NestedMovable
         : movable(i)
     {
     }
-    NestedMovable(NestedMovable &&) = default;
-    NestedMovable & operator=(NestedMovable &&) = default;
+    NestedMovable(NestedMovable &&) noexcept = default;
+    NestedMovable & operator=(NestedMovable &&) noexcept = default;
+    NestedMovable(const NestedMovable &) = delete;
+    NestedMovable & operator=(const NestedMovable &) = delete;
 
     friend bool operator==(const NestedMovable & l, const NestedMovable & r)
     {
@@ -153,41 +156,41 @@ void test_vector_of_nested_movables()
 
 void test_list_of_nested_movables()
 {
-    std::vector<std::list<NestedMovable>> to_sort;
+    std::vector<std::forward_list<NestedMovable>> to_sort;
     to_sort.emplace_back();
-    to_sort.back().emplace_back(1); to_sort.back().emplace_back(2); to_sort.back().emplace_back(3);
+    to_sort.back().emplace_front(3); to_sort.back().emplace_front(2); to_sort.back().emplace_front(1);
     to_sort.emplace_back();
-    to_sort.back().emplace_back(1); to_sort.back().emplace_back(2); to_sort.back().emplace_back(2);
+    to_sort.back().emplace_front(2); to_sort.back().emplace_front(2); to_sort.back().emplace_front(1);
     to_sort.emplace_back();
-    to_sort.back().emplace_back(1); to_sort.back().emplace_back(1); to_sort.back().emplace_back(2);
+    to_sort.back().emplace_front(2); to_sort.back().emplace_front(1); to_sort.back().emplace_front(1);
     to_sort.emplace_back();
-    to_sort.back().emplace_back(0); to_sort.back().emplace_back(1); to_sort.back().emplace_back(2);
+    to_sort.back().emplace_front(2); to_sort.back().emplace_front(1); to_sort.back().emplace_front(0);
     to_sort.emplace_back();
-    to_sort.back().emplace_back(1); to_sort.back().emplace_back(2); to_sort.back().emplace_back(4);
+    to_sort.back().emplace_front(4); to_sort.back().emplace_front(2); to_sort.back().emplace_front(1);
     to_sort.emplace_back();
-    to_sort.back().emplace_back(1); to_sort.back().emplace_back(3); to_sort.back().emplace_back(4);
+    to_sort.back().emplace_front(4); to_sort.back().emplace_front(3); to_sort.back().emplace_front(1);
     to_sort.emplace_back();
-    to_sort.back().emplace_back(2); to_sort.back().emplace_back(3); to_sort.back().emplace_back(4);
+    to_sort.back().emplace_front(4); to_sort.back().emplace_front(3); to_sort.back().emplace_front(2);
     to_sort.emplace_back();
-    to_sort.back().emplace_back(-2); to_sort.back().emplace_back(-3); to_sort.back().emplace_back(-4);
+    to_sort.back().emplace_front(-4); to_sort.back().emplace_front(-3); to_sort.back().emplace_front(-2);
     test_default_ska_sort_combinations(to_sort);
 }
 
 void test_list_of_list_of_nested_movables()
 {
-    std::vector<std::list<std::list<NestedMovable>>> to_sort;
+    std::vector<std::forward_list<std::forward_list<NestedMovable>>> to_sort;
     to_sort.emplace_back();
-    to_sort.back().emplace_back();
-    to_sort.back().back().emplace_back(1); to_sort.back().back().emplace_back(2);
-    to_sort.back().emplace_back();
-    to_sort.back().back().emplace_back(2); to_sort.back().back().emplace_back(3);
+    to_sort.back().emplace_front();
+    to_sort.back().front().emplace_front(3); to_sort.back().front().emplace_front(2);
+    to_sort.back().emplace_front();
+    to_sort.back().front().emplace_front(2); to_sort.back().front().emplace_front(1);
     to_sort.emplace_back();
-    to_sort.back().emplace_back();
-    to_sort.back().back().emplace_back(1); to_sort.back().back().emplace_back(2);
+    to_sort.back().emplace_front();
+    to_sort.back().front().emplace_front(2); to_sort.back().front().emplace_front(1);
     to_sort.emplace_back();
-    to_sort.back().emplace_back();
-    to_sort.back().back().emplace_back(1); to_sort.back().back().emplace_back(2);
-    to_sort.back().back().emplace_back(1); to_sort.back().back().emplace_back(2);
+    to_sort.back().emplace_front();
+    to_sort.back().front().emplace_front(2); to_sort.back().front().emplace_front(1);
+    to_sort.back().front().emplace_front(2); to_sort.back().front().emplace_front(1);
     test_default_ska_sort_combinations(to_sort);
 }
 

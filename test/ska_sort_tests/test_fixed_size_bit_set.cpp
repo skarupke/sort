@@ -6,7 +6,7 @@
 
 static constexpr const std::uint64_t starting_values[] =
 {
-    1, 101, 99, 7, std::numeric_limits<std::uint64_t>::max()
+    1, 101, 99, 7, (std::numeric_limits<std::uint64_t>::max)()
 };
 
 void test_find_lsb()

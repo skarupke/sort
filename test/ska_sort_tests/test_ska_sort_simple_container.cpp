@@ -8,6 +8,7 @@
 #include <vector>
 #include <list>
 #include <forward_list>
+#include <array>
 
 void test_deque()
 {

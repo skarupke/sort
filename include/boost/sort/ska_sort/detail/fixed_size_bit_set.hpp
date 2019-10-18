@@ -4,10 +4,11 @@
 #define BOOST_SKA_SORT_FIXED_SIZE_BITSET_HPP
 
 #include <cstdint>
+#include <cstring> // for memcpy
 
 #include <boost/config.hpp>
 
-#if (defined(BOOST_MSVC) || (defined(__clang__) && defined(__c2__)) || (defined(BOOST_INTEL) && defined(_MSC_VER))) && (defined(_M_IX86) || defined(_M_X64))
+#if (defined(BOOST_MSVC) || (defined(__clang__) && defined(__c2__)) || (defined(BOOST_INTEL) && defined(_MSC_VER))) && defined(_M_X64)
 #include <intrin.h>
 #elif defined(BOOST_INTEL)
 #include <immintrin.h>
@@ -16,7 +17,7 @@
 namespace boost::sort::detail_ska_sort
 {
 
-#if (defined(BOOST_MSVC) || (defined(__clang__) && defined(__c2__)) || (defined(BOOST_INTEL) && defined(_MSC_VER))) && (defined(_M_IX86) || defined(_M_X64))
+#if (defined(BOOST_MSVC) || (defined(__clang__) && defined(__c2__)) || (defined(BOOST_INTEL) && defined(_MSC_VER))) && defined(_M_X64)
 
 #pragma intrinsic(_BitScanForward64)
 
@@ -43,13 +44,11 @@ BOOST_FORCEINLINE unsigned find_lsb(std::uint64_t mask)
 #else
 inline unsigned find_lsb(std::uint64_t v)
 {
-    union
-    {
-        float as_float;
-        uint32_t as_uint32;
-    }
-    in_union = { static_cast<float>(v & -v) }; // cast the least significant bit in v to a float
-    return (in_union.as_uint32 >> 23) - 0x7f;
+    float f = static_cast<float>(v & -v); // cast the least significant bit in v to a float
+    uint32_t as_uint32;
+    memcpy(&as_uint32, &f, sizeof(as_uint32));
+    // the exponent stores the power of two
+    return (as_uint32 >> 23) - 0x7f;
 }
 #endif
 
