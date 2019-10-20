@@ -14,6 +14,8 @@ These algorithms do not use any other library or utility. The parallel algorithm
                       |       |                            |                               |                     |
     Algorithm         |Stable |   Additional memory        |Best, average, and worst case  | Comparison method   |
     ------------------|-------|----------------------------|-------------------------------|---------------------|
+    ska_sort          |  no   |      key_length            | N, N key_length,              | Hybrid radix sort   | 
+                      |       |                            | min(N logN, N key_length)     |                     |
     spreadsort        |  no   |      key_length            | N, N sqrt(LogN),              | Hybrid radix sort   |
                       |       |                            | min(N logN, N key_length)     |                     |
     pdqsort           |  no   |      Log N                 | N, N LogN, N LogN             | Comparison operator |
@@ -21,8 +23,9 @@ These algorithms do not use any other library or utility. The parallel algorithm
     flat_stable_sort  |  yes  |size of the data / 256 + 8K | N, N LogN, N LogN             | Comparison operator |
                       |       |                            |                               |                     |
 
+- **ska_sort** is a generalized version of radix sort. It can sort most types and is faster than comparison based sorts on unsorted data. It was designed and developed by Malte Skarupke. 
 
-- **spreadsort** is a novel hybrid radix sort algorithm, extremely fast, designed and developed by Steven Ross.
+- **spreadsort** is a novel hybrid radix sort algorithm, designed and developed by Steven Ross.
 
 - **pdqsort** is a improvement of the quick sort algorithm, designed and developed by Orson Peters.
 
@@ -62,7 +65,7 @@ highest speed, changes according to the size of the objects to sort according to
 
 <h2>Installation </h2>
 - This library is **include only**.
-- Don't need to link with any static or dynamic library. Only need a C++11 compiler
+- Don't need to link with any static or dynamic library. ska_sort needs C++17, the other libraries will compile with C++11
 - Only need to include the file boost/sort/sort.hpp
 
 
@@ -70,10 +73,11 @@ highest speed, changes according to the size of the objects to sort according to
 This library is integrated in the [Boost Library](https://boost.org) .
 
 
-Copyright 2017
+Copyright 2019
 
 - [Steven Ross *(spreadsort@gmail.com)* ](mail:spreadsort@gmail.com)
 - [Francisco Tapia *(fjtapia@gmail.com)* ](mail:fjtapia@gmail.com)
 - [Orson Peters *(orsonpeters@gmail.com)* ](mail:orsonpeters@gmail.com)
+- [Malte Skarupke *(malteskarupke@web.de)* ](mail:malteskarupke@web.de)
 
 Distributed under the [Boost Software License, Version 1.0. ](http://www.boost.org/LICENSE_1_0.txt)  (See http://www.boost.org/LICENSE_1_0.txt)
