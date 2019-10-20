@@ -110,6 +110,10 @@ struct NestedMovable
     {
         return l.movable == r.movable;
     }
+    friend bool operator!=(const NestedMovable & l, const NestedMovable & r)
+    {
+        return !(l == r);
+    }
     friend bool operator<(const NestedMovable & l, const NestedMovable & r)
     {
         return l.movable < r.movable;
