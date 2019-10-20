@@ -9,7 +9,7 @@ echo "C O M P I L I N G . . . . . . . . . . ."
 
 clang++ ./file_generator.cpp -std=c++17 -march=native -w -fexceptions -O3 -I../../include  -s  -o file_generator
 
-clang++ ./benchmark_objects.cpp -std=c++17 -march=native -w -fexceptions -O3 -I../../include -s  -o benchmark_objects
+clang++ ./benchmark_objects.cpp ./memory_usage.cpp -std=c++17 -march=native -w -fexceptions -O3 -pthread -I../../include -s  -o benchmark_objects
 echo "."
 echo "R U N N I N G . . . . . . . . . . ."
 echo "( The time needed is around 45 minutes depending on your machine )"

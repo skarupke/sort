@@ -27,6 +27,7 @@
 #include "boost/sort/common/int_array.hpp"
 
 #include <boost/sort/sort.hpp>
+#include "memory_usage.h"
 
 
 #define NMAXSTRING 10000000
@@ -47,16 +48,19 @@ using bsort::spreadsort::spreadsort;
 using bsort::pdqsort;
 using bsort::ska_sort;
 
-void Generator_random (void);
+void Generator_random(void);
 void Generator_sorted(void);
 void Generator_sorted_end(size_t n_last);
-void Generator_sorted_middle (size_t n_last);
+void Generator_sorted_middle(size_t n_last);
 void Generator_reverse_sorted(void);
 void Generator_reverse_sorted_end(size_t n_last);
 void Generator_reverse_sorted_middle(size_t n_last);
+void Memory_usage_random(void);
 
 template <class IA, class compare>
 int Test(std::vector<IA> &B, compare comp = compare());
+template <class IA, class compare>
+int TestMemoryUsage(std::vector<IA> &B, compare comp = compare());
 
 
 int main(int argc, char *argv[])
@@ -73,66 +77,68 @@ int main(int argc, char *argv[])
     cout << "************************************************************\n";
     cout << std::endl;
 
-    cout<<"[ 1 ] std::sort   [ 2 ] pdqsort          [ 3 ] std::stable_sort \n";
-    cout<<"[ 4 ] spinsort    [ 5 ] flat_stable_sort [ 6 ] spreadsort\n";
-    cout<<"[ 7 ] ska_sort\n\n";
-    cout<<"                    |      |      |      |      |      |      |      |\n";
-    cout<<"                    | [ 1 ]| [ 2 ]| [ 3 ]| [ 4 ]| [ 5 ]| [ 6 ]| [ 7 ]|\n";
-    cout<<"--------------------+------+------+------+------+------+------+------+\n";
+    cout << "[ 1 ] std::sort   [ 2 ] pdqsort          [ 3 ] std::stable_sort \n";
+    cout << "[ 4 ] spinsort    [ 5 ] flat_stable_sort [ 6 ] spreadsort\n";
+    cout << "[ 7 ] ska_sort\n\n";
+    cout << "                    |      |      |      |      |      |      |      |\n";
+    cout << "                    | [ 1 ]| [ 2 ]| [ 3 ]| [ 4 ]| [ 5 ]| [ 6 ]| [ 7 ]|\n";
+    cout << "--------------------+------+------+------+------+------+------+------+\n";
     std::string empty_line =
-           "                    |      |      |      |      |      |      |      |\n";
+        "                    |      |      |      |      |      |      |      |\n";
 
-    cout<<"random              |";
-    Generator_random ();
+    cout << "random              |";
+    Generator_random();
+    cout << "random memory usage |";
+    Memory_usage_random();
 
-    cout<<empty_line;
-    cout<<"sorted              |";
+    cout << empty_line;
+    cout << "sorted              |";
     Generator_sorted();
 
-    cout<<"sorted + 0.1% end   |";
+    cout << "sorted + 0.1% end   |";
     Generator_sorted_end(NMAXSTRING / 1000);
 
-    cout<<"sorted +   1% end   |";
+    cout << "sorted +   1% end   |";
     Generator_sorted_end(NMAXSTRING / 100);
 
-    cout<<"sorted +  10% end   |";
+    cout << "sorted +  10% end   |";
     Generator_sorted_end(NMAXSTRING / 10);
 
-    cout<<empty_line;
-    cout<<"sorted + 0.1% mid   |";
-    Generator_sorted_middle (NMAXSTRING / 1000);
+    cout << empty_line;
+    cout << "sorted + 0.1% mid   |";
+    Generator_sorted_middle(NMAXSTRING / 1000);
 
-    cout<<"sorted +   1% mid   |";
-    Generator_sorted_middle (NMAXSTRING / 100);
+    cout << "sorted +   1% mid   |";
+    Generator_sorted_middle(NMAXSTRING / 100);
 
-    cout<<"sorted +  10% mid   |";
-    Generator_sorted_middle (NMAXSTRING / 10 );
+    cout << "sorted +  10% mid   |";
+    Generator_sorted_middle(NMAXSTRING / 10);
 
-    cout<<empty_line;
-    cout<<"reverse sorted      |";
+    cout << empty_line;
+    cout << "reverse sorted      |";
     Generator_reverse_sorted();
 
-    cout<<"rv sorted + 0.1% end|";
+    cout << "rv sorted + 0.1% end|";
     Generator_reverse_sorted_end(NMAXSTRING / 1000);
 
-    cout<<"rv sorted +   1% end|";
+    cout << "rv sorted +   1% end|";
     Generator_reverse_sorted_end(NMAXSTRING / 100);
 
-    cout<<"rv sorted +  10% end|";
+    cout << "rv sorted +  10% end|";
     Generator_reverse_sorted_end(NMAXSTRING / 10);
 
-    cout<<empty_line;
-    cout<<"rv sorted + 0.1% mid|";
+    cout << empty_line;
+    cout << "rv sorted + 0.1% mid|";
     Generator_reverse_sorted_middle(NMAXSTRING / 1000);
 
-    cout<<"rv sorted +   1% mid|";
+    cout << "rv sorted +   1% mid|";
     Generator_reverse_sorted_middle(NMAXSTRING / 100);
 
-    cout<<"rv sorted +  10% mid|";
+    cout << "rv sorted +  10% mid|";
     Generator_reverse_sorted_middle(NMAXSTRING / 10);
 
-    cout<<"--------------------+------+------+------+------+------+------+------+\n";
-    cout<<endl<<endl ;
+    cout << "--------------------+------+------+------+------+------+------+------+\n";
+    cout << endl << endl;
     return 0;
 }
 
@@ -149,6 +155,20 @@ void Generator_random(void)
     Test<std::string, std::less<std::string>>(A);
 
 };
+
+void Memory_usage_random(void)
+{
+    std::vector<std::string> A;
+    A.reserve(NMAXSTRING);
+    A.clear();
+    if (bsc::fill_vector_string("input.bin", A, NMAXSTRING) != 0)
+    {
+        std::cout << "Error in the input file\n";
+        return;
+    };
+    TestMemoryUsage<std::string, std::less<std::string>>(A);
+
+};
 void Generator_sorted(void)
 {
     std::vector<std::string> A;
@@ -159,7 +179,7 @@ void Generator_sorted(void)
         std::cout << "Error in the input file\n";
         return;
     };
-    std::sort( A.begin() , A.end() );
+    std::sort(A.begin(), A.end());
     Test<std::string, std::less<std::string>>(A);
 };
 
@@ -168,17 +188,17 @@ void Generator_sorted_end(size_t n_last)
     std::vector<std::string> A;
     A.reserve(NMAXSTRING);
     A.clear();
-    if (bsc::fill_vector_string("input.bin", A, NMAXSTRING+ n_last) != 0)
+    if (bsc::fill_vector_string("input.bin", A, NMAXSTRING + n_last) != 0)
     {
         std::cout << "Error in the input file\n";
         return;
     };
-    std::sort (A.begin() , A.begin() + NMAXSTRING );
+    std::sort(A.begin(), A.begin() + NMAXSTRING);
     Test<std::string, std::less<std::string>>(A);
 };
 void Generator_sorted_middle(size_t n_last)
 {
-    std::vector<std::string> A,B,C;
+    std::vector<std::string> A, B, C;
     A.reserve(NMAXSTRING);
     A.clear();
     if (bsc::fill_vector_string("input.bin", A, NMAXSTRING + n_last) != 0)
@@ -186,20 +206,21 @@ void Generator_sorted_middle(size_t n_last)
         std::cout << "Error in the input file\n";
         return;
     };
-    for ( size_t i = NMAXSTRING ; i < A.size() ; ++i)
-        B.push_back ( std::move ( A[i]));
-    A.resize ( NMAXSTRING);
-    std::sort (A.begin() , A.end() );
-    size_t step = NMAXSTRING /n_last +1 ;
-    size_t pos = 0 ;
+    for (size_t i = NMAXSTRING; i < A.size(); ++i)
+        B.push_back(std::move(A[i]));
+    A.resize(NMAXSTRING);
+    std::sort(A.begin(), A.end());
+    size_t step = NMAXSTRING / n_last + 1;
+    size_t pos = 0;
 
-    for ( size_t i =0 ; i < B.size() ; ++i, pos += step)
-    {   C.push_back ( B[i]);
-        for ( size_t k = 0 ; k < step ; ++k )
-            C.push_back ( A[pos + k] );
+    for (size_t i = 0; i < B.size(); ++i, pos += step)
+    {
+        C.push_back(B[i]);
+        for (size_t k = 0; k < step; ++k)
+            C.push_back(A[pos + k]);
     };
-    while ( pos < A.size() ) C.push_back ( A[pos++]);
-    A = C ;
+    while (pos < A.size()) C.push_back(A[pos++]);
+    A = C;
 
     Test<std::string, std::less<std::string>>(A);
 };
@@ -224,43 +245,26 @@ void Generator_reverse_sorted(void)
     };
     Test<std::string, std::less<std::string>>(A);
 
-/*
-    std::vector<std::string> A;
-    A.reserve(NMAXSTRING);
-    A.clear();
-    if (bsc::fill_vector_string("input.bin", A, NMAXSTRING) != 0)
-    {
-        std::cout << "Error in the input file\n";
-        return;
-    };
-    std::sort( A.begin() , A.end());
-    size_t nmid = (A.size() >>1), nlast = A.size() -1 ;
-    for (size_t i = 0 ; i < nmid ;++i)
-        std::swap ( A[i], A [nlast -i]);
+    /*
+        std::vector<std::string> A;
+        A.reserve(NMAXSTRING);
+        A.clear();
+        if (bsc::fill_vector_string("input.bin", A, NMAXSTRING) != 0)
+        {
+            std::cout << "Error in the input file\n";
+            return;
+        };
+        std::sort( A.begin() , A.end());
+        size_t nmid = (A.size() >>1), nlast = A.size() -1 ;
+        for (size_t i = 0 ; i < nmid ;++i)
+            std::swap ( A[i], A [nlast -i]);
 
-    Test<std::string, std::less<std::string>>(A);
-*/
+        Test<std::string, std::less<std::string>>(A);
+    */
 };
 void Generator_reverse_sorted_end(size_t n_last)
 {
     std::vector<std::string> A;
-    A.reserve(NMAXSTRING);
-    A.clear();
-    if (bsc::fill_vector_string("input.bin", A, NMAXSTRING+ n_last) != 0)
-    {
-        std::cout << "Error in the input file\n";
-        return;
-    };
-    std::sort (A.begin() , A.begin() + NMAXSTRING );
-    for ( size_t i =0 ; i< (NMAXSTRING >>1); ++i)
-        std::swap ( A[i], A[NMAXSTRING - 1 - i]);
-
-    Test<std::string, std::less<std::string>>(A);
-
-};
-void Generator_reverse_sorted_middle(size_t n_last)
-{
-    std::vector<std::string> A,B,C;
     A.reserve(NMAXSTRING);
     A.clear();
     if (bsc::fill_vector_string("input.bin", A, NMAXSTRING + n_last) != 0)
@@ -268,96 +272,183 @@ void Generator_reverse_sorted_middle(size_t n_last)
         std::cout << "Error in the input file\n";
         return;
     };
-    for ( size_t i = NMAXSTRING ; i < A.size() ; ++i)
-        B.push_back ( std::move ( A[i]));
-    A.resize ( NMAXSTRING);
+    std::sort(A.begin(), A.begin() + NMAXSTRING);
+    for (size_t i = 0; i < (NMAXSTRING >> 1); ++i)
+        std::swap(A[i], A[NMAXSTRING - 1 - i]);
 
-    std::sort (A.begin() , A.end() );
-    for ( size_t i =0 ; i< (NMAXSTRING >>1); ++i)
-        std::swap ( A[i], A[NMAXSTRING - 1 - i]);
+    Test<std::string, std::less<std::string>>(A);
 
-    size_t step = NMAXSTRING /n_last +1 ;
-    size_t pos = 0 ;
-
-    for ( size_t i =0 ; i < B.size() ; ++i, pos += step)
-    {   C.push_back ( B[i]);
-        for ( size_t k = 0 ; k < step ; ++k )
-            C.push_back ( A[pos + k] );
+};
+void Generator_reverse_sorted_middle(size_t n_last)
+{
+    std::vector<std::string> A, B, C;
+    A.reserve(NMAXSTRING);
+    A.clear();
+    if (bsc::fill_vector_string("input.bin", A, NMAXSTRING + n_last) != 0)
+    {
+        std::cout << "Error in the input file\n";
+        return;
     };
-    while ( pos < A.size() )
-        C.push_back ( A[pos++]);
-    A = C ;
+    for (size_t i = NMAXSTRING; i < A.size(); ++i)
+        B.push_back(std::move(A[i]));
+    A.resize(NMAXSTRING);
+
+    std::sort(A.begin(), A.end());
+    for (size_t i = 0; i < (NMAXSTRING >> 1); ++i)
+        std::swap(A[i], A[NMAXSTRING - 1 - i]);
+
+    size_t step = NMAXSTRING / n_last + 1;
+    size_t pos = 0;
+
+    for (size_t i = 0; i < B.size(); ++i, pos += step)
+    {
+        C.push_back(B[i]);
+        for (size_t k = 0; k < step; ++k)
+            C.push_back(A[pos + k]);
+    };
+    while (pos < A.size())
+        C.push_back(A[pos++]);
+    A = C;
 
     Test<std::string, std::less<std::string>>(A);
 };
 
 
 template<class IA, class compare>
-int Test (std::vector<IA> &B,  compare comp)
+int Test(std::vector<IA> &B, compare comp)
 {   //---------------------------- begin -----------------------------
     double duration;
     time_point start, finish;
-    std::vector<IA> A (B);
+    std::vector<IA> A(B);
     std::vector<double> V;
 
 
     A = B;
-    start = now ();
-    std::sort (A.begin (), A.end (), comp);
-    finish = now ();
-    duration = subtract_time (finish, start);
-    V.push_back (duration);
+    start = now();
+    std::sort(A.begin(), A.end(), comp);
+    finish = now();
+    duration = subtract_time(finish, start);
+    V.push_back(duration);
 
     A = B;
-    start = now ();
-    pdqsort (A.begin (), A.end (), comp);
-    finish = now ();
-    duration = subtract_time (finish, start);
-    V.push_back (duration);
+    start = now();
+    pdqsort(A.begin(), A.end(), comp);
+    finish = now();
+    duration = subtract_time(finish, start);
+    V.push_back(duration);
 
     A = B;
-    start = now ();
-    std::stable_sort (A.begin (), A.end (), comp);
-    finish = now ();
-    duration = subtract_time (finish, start);
-    V.push_back (duration);
+    start = now();
+    std::stable_sort(A.begin(), A.end(), comp);
+    finish = now();
+    duration = subtract_time(finish, start);
+    V.push_back(duration);
 
     A = B;
-    start = now ();
-    spinsort (A.begin (), A.end (), comp);
-    finish = now ();
-    duration = subtract_time (finish, start);
-    V.push_back (duration);
+    start = now();
+    spinsort(A.begin(), A.end(), comp);
+    finish = now();
+    duration = subtract_time(finish, start);
+    V.push_back(duration);
 
     A = B;
-    start = now ();
-    flat_stable_sort (A.begin (), A.end (), comp);
-    finish = now ();
-    duration = subtract_time (finish, start);
-    V.push_back (duration);
+    start = now();
+    flat_stable_sort(A.begin(), A.end(), comp);
+    finish = now();
+    duration = subtract_time(finish, start);
+    V.push_back(duration);
 
     A = B;
-    start = now ();
-    spreadsort (A.begin (), A.end ());
-    finish = now ();
-    duration = subtract_time (finish, start);
-    V.push_back (duration);
+    start = now();
+    spreadsort(A.begin(), A.end());
+    finish = now();
+    duration = subtract_time(finish, start);
+    V.push_back(duration);
 
     A = B;
-    start = now ();
-    ska_sort (A.begin (), A.end ());
-    finish = now ();
-    duration = subtract_time (finish, start);
-    V.push_back (duration);
+    start = now();
+    ska_sort(A.begin(), A.end());
+    finish = now();
+    duration = subtract_time(finish, start);
+    V.push_back(duration);
 
     //-----------------------------------------------------------------------
     // printing the vector
     //-----------------------------------------------------------------------
-    std::cout<<std::setprecision(2)<<std::fixed;
-    for ( uint32_t i =0 ; i < V.size() ; ++i)
-    {   std::cout<<std::right<<std::setw(5)<<V[i]<<" |";
+    std::cout << std::setprecision(2) << std::fixed;
+    for (uint32_t i = 0; i < V.size(); ++i)
+    {
+        std::cout << std::right << std::setw(5) << V[i] << " |";
     };
-    std::cout<<std::endl;
+    std::cout << std::endl;
+    return 0;
+};
+template<class IA, class compare>
+int TestMemoryUsage(std::vector<IA> &B, compare comp)
+{   //---------------------------- begin -----------------------------
+    std::vector<IA> A(B);
+    std::vector<size_t> max_memory;
+
+
+    A = B;
+    {
+        SampleCurrentMemoryUsageInScope memory_scope;
+        std::sort(A.begin(), A.end(), comp);
+        max_memory.push_back(memory_scope.GetMaxUsedMemory());
+    }
+
+    A = B;
+    {
+        SampleCurrentMemoryUsageInScope memory_scope;
+        pdqsort(A.begin(), A.end(), comp);
+        max_memory.push_back(memory_scope.GetMaxUsedMemory());
+    }
+
+    A = B;
+    {
+        SampleCurrentMemoryUsageInScope memory_scope;
+        std::stable_sort(A.begin(), A.end(), comp);
+        max_memory.push_back(memory_scope.GetMaxUsedMemory());
+    }
+
+    A = B;
+    {
+        SampleCurrentMemoryUsageInScope memory_scope;
+        spinsort(A.begin(), A.end(), comp);
+        max_memory.push_back(memory_scope.GetMaxUsedMemory());
+    }
+
+    A = B;
+    {
+        SampleCurrentMemoryUsageInScope memory_scope;
+        flat_stable_sort(A.begin(), A.end(), comp);
+        max_memory.push_back(memory_scope.GetMaxUsedMemory());
+    }
+
+    A = B;
+    {
+        SampleCurrentMemoryUsageInScope memory_scope;
+        spreadsort(A.begin(), A.end());
+        max_memory.push_back(memory_scope.GetMaxUsedMemory());
+    }
+
+    A = B;
+    {
+        SampleCurrentMemoryUsageInScope memory_scope;
+        ska_sort(A.begin(), A.end());
+        max_memory.push_back(memory_scope.GetMaxUsedMemory());
+    }
+
+    //-----------------------------------------------------------------------
+    // printing the vector
+    //-----------------------------------------------------------------------
+    std::cout << std::setprecision(1) << std::fixed;
+    for (size_t memory_usage : max_memory)
+    {
+        double megabytes = memory_usage / 1024.0 / 1024.0;
+        std::cout << std::right << std::setw(5) << megabytes << " |";
+    };
+    std::cout << std::endl;
     return 0;
 };
 

@@ -9,7 +9,7 @@ echo "C O M P I L I N G . . . . . . . . . . ."
 echo "."
 g++ ./file_generator.cpp -std=c++17 -march=native -w -fexceptions -O3 -I../../include  -s  -o file_generator
 
-g++ ./benchmark_numbers.cpp -std=c++17 -march=native -w -fexceptions -O3 -I../../include -s -o benchmark_numbers
+g++ ./benchmark_numbers.cpp ./memory_usage.cpp -std=c++17 -march=native -w -fexceptions -O3 -pthread -I../../include -s -o benchmark_numbers
 
 echo "R U N N I N G . . . . . . . . . . ."
 echo "( The time needed is around 10 minutes depending on your machine )"

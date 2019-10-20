@@ -13,10 +13,11 @@
 
 [section:overview Overview]
 
+
 [section:intro Introduction]
 
-ska_sort is a generalization of [@https://en.wikipedia.org/wiki/Radix_sort MSD radix sort]. Radix sort has long been known to be the fastest sorting algorithm for integers. It has also been generalized to work on floats and strings, and ska_sort generalizes it further so that it works for most types. The only case where comparison based sorting can be faster is for data that is already sorted or nearly sorted, in which case *spinsort* is a good choice, but on unsorted data ska_sort will be much faster than any comparison based sorting algorithm.
-
+ska_sort is a generalization of [@https://en.wikipedia.org/wiki/Radix_sort MSD radix sort]. Radix sort has long been known to be the fastest sorting algorithm for integers. It has also been generalized to work on floats and strings, and ska_sort generalizes it further so that it works for most types. The only case where comparison based sorting can be faster is for data that is already sorted or nearly sorted, in which case *spinsort* or *flat_stable_sort* are a good choices, but on unsorted data ska_sort will be much faster than any comparison based sorting algorithm.
+ 
 [endsect] [/section:intro]
 
 [section:sort_key Sort Key]
