@@ -8,6 +8,18 @@
 
 namespace boost::sort
 {
+namespace detail_ska_sort
+{
+template<size_t Index>
+struct get_at_index_tuple
+{
+    template<typename... Args>
+    decltype(auto) operator()(const std::tuple<Args...> & value) const
+    {
+        return std::get<Index>(value);
+    }
+};
+}
 
 template<typename... Args>
 struct ska_sorter<std::tuple<Args...>>
@@ -17,17 +29,11 @@ struct ska_sorter<std::tuple<Args...>>
     {
         if constexpr (Index + 1 == std::tuple_size_v<std::tuple<Args...>>)
         {
-            sorter.sort([](const std::tuple<Args...> & value) -> decltype(auto)
-            {
-                return std::get<Index>(value);
-            });
+            sorter.sort(detail_ska_sort::get_at_index_tuple<Index>{});
         }
         else
         {
-            sorter.sort([](const std::tuple<Args...> & value) -> decltype(auto)
-            {
-                return std::get<Index>(value);
-            }, &sort_at_index<Index + 1, Sorter>);
+            sorter.sort(detail_ska_sort::get_at_index_tuple<Index>{}, &sort_at_index<Index + 1, Sorter>);
         }
     }
     template<typename Sorter>

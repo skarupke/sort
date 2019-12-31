@@ -103,7 +103,7 @@ void test_default_ska_sort_combinations(T & container, ExtractKey && extract_key
 template<typename T>
 void test_default_ska_sort_combinations(T & container)
 {
-    test_default_ska_sort_combinations(container, boost::sort::detail_ska_sort::iterator_identity_function<typename T::iterator>());
+    test_default_ska_sort_combinations(container, boost::sort::detail_ska_sort::identity_function<typename std::iterator_traits<typename T::iterator>::value_type>());
 }
 
 template<typename T, typename ExtractKey>
@@ -127,7 +127,7 @@ void test_small_key_ska_sort_combinations(T & container, ExtractKey && extract_k
 template<typename T>
 void test_small_key_ska_sort_combinations(T & container)
 {
-    test_small_key_ska_sort_combinations(container, boost::sort::detail_ska_sort::iterator_identity_function<typename T::iterator>());
+    test_small_key_ska_sort_combinations(container, boost::sort::detail_ska_sort::identity_function<typename std::iterator_traits<typename T::iterator>::value_type>());
 }
 
 

@@ -92,11 +92,12 @@ void test_chars_unicode()
 
 void test_string_unicode_direct_compare()
 {
-    auto comparer = boost::sort::ska_sorter<std::string>::sort_at_index{1};
-    BOOST_CHECK(comparer("née", "naive") == std::less<std::string>{}("née", "naive"));
-    BOOST_CHECK(comparer("aaa", "aaaaa"));
-    auto at_17 = boost::sort::ska_sorter<std::string>::sort_at_index{17};
-    BOOST_CHECK(at_17("aaaaaaaaaaaaaaaaaaaab", "aaaaaaaaaaaaaaaaaaaabb") == std::less<std::string>{}("aaaaaaaaaaaaaaaaaaaab", "aaaaaaaaaaaaaaaaaaaabb"));
+    using namespace std::string_literals;
+    auto comparer = boost::sort::detail_ska_sort::sort_at_index{1};
+    BOOST_CHECK(comparer("née"s, "naive"s) == std::less<std::string>{}("née"s, "naive"s));
+    BOOST_CHECK(comparer("aaa"s, "aaaaa"s));
+    auto at_17 = boost::sort::detail_ska_sort::sort_at_index{17};
+    BOOST_CHECK(at_17("aaaaaaaaaaaaaaaaaaaab"s, "aaaaaaaaaaaaaaaaaaaabb"s) == std::less<std::string>{}("aaaaaaaaaaaaaaaaaaaab"s, "aaaaaaaaaaaaaaaaaaaabb"s));
 }
 
 void test_string_bad_case()

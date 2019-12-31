@@ -8,6 +8,18 @@
 
 namespace boost::sort
 {
+namespace detail_ska_sort
+{
+template<size_t Index>
+struct get_at_index_variant
+{
+    template<typename... Args>
+    decltype(auto) operator()(const std::variant<Args...> & value) const
+    {
+        return std::get<Index>(value);
+    }
+};
+}
 
 template<typename... Args>
 struct ska_sorter<std::variant<Args...>>
@@ -20,10 +32,7 @@ struct ska_sorter<std::variant<Args...>>
         template<size_t Index, typename Sorter>
         static void sort_subindex(Sorter & sorter)
         {
-            sorter.sort([](const std::variant<Args...> & value) -> decltype(auto)
-            {
-                return std::get<Index>(value);
-            });
+            sorter.sort(detail_ska_sort::get_at_index_variant<Index>{});
         }
 
         template<typename Sorter>
